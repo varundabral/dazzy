@@ -3,8 +3,9 @@ import { BsEmojiSmileFill } from "react-icons/bs";
 import { IoMdSend } from "react-icons/io";
 import styled from "styled-components";
 import Picker from "emoji-picker-react";
+const CryptoJS = require("crypto-js")
 
-export default function ChatInput({ handleSendMsg }) {
+export default function ChatInput({ handleSendMsg , setMessages, messages}) {
   const [msg, setMsg] = useState("");
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const handleEmojiPickerhideShow = () => {
@@ -17,14 +18,19 @@ export default function ChatInput({ handleSendMsg }) {
     setMsg(message);
   };
 
+  const decryptMessages = () => {
+    const newMessages = messages.map(msg => {
+      const decryptedMsg = CryptoJS.AES.decrypt(msg.message, 'secret key 123').toString(CryptoJS.enc.Utf8)
+      return {...msg,  message:decryptedMsg ? decryptedMsg : msg.message}
+    })
+    setMessages(newMessages)
+  }
+
   const sendChat = (event) => {
     event.preventDefault();
-    if (msg.length > 0) {
       handleSendMsg(msg);
-      setMsg("");
-    }
+      setMsg("")
   };
-
   return (
     <Container>
       <div className="button-container">
@@ -40,6 +46,8 @@ export default function ChatInput({ handleSendMsg }) {
           onChange={(e) => setMsg(e.target.value)}
           value={msg}
         />
+        <button type="button" onClick={decryptMessages}>Decrypt</button>
+        <button type="button" onClick={() => {setMsg(CryptoJS.AES.encrypt(msg, 'secret key 123').toString())}}>Encrypt</button>
         <button type="submit">
           <IoMdSend />
         </button>
